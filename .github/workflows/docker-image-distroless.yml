@@ -24,10 +24,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=distroless,enable={{is_default_branch}}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           labels: |
             org.opencontainers.image.authors=cmdjulian
             org.opencontainers.image.base.name=distroless
@@ -47,7 +44,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push Distroless
         id: build-and-push
         uses: docker/build-push-action@v3
         with:
@@ -55,7 +52,8 @@ jobs:
           file: Dockerfile-distroless
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: distroless
+          network: host
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
