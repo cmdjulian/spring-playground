@@ -9,7 +9,7 @@ RUN echo "NativeImageArgs = --static --libc=musl" > "${NATIVE_IMAGE_CONFIG_FILE}
 WORKDIR /build
 RUN microdnf install -y findutils
 COPY --link . /build/
-RUN --mount=type=cache,target=.gradle-cache ./gradlew nativeCompile --no-daemon
+RUN --mount=type=cache,target=.gradle-cache ./gradlew --no-daemon nativeCompile
 
 
 # compress application
