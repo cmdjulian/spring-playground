@@ -1,0 +1,49 @@
+# syntax = docker/dockerfile:1.4.3
+
+FROM ghcr.io/graalvm/native-image:muslib-ol9-java17-22.3.0 AS compile
+
+ENV GRADLE_USER_HOME=".gradle-cache"
+ENV NATIVE_IMAGE_CONFIG_FILE="/tmp/default.properties"
+RUN echo "NativeImageArgs = --static --libc=musl" > "${NATIVE_IMAGE_CONFIG_FILE}"
+
+WORKDIR /build
+RUN microdnf install -y findutils
+COPY --link . /build/
+RUN --mount=type=cache,target=.gradle-cache ./gradlew nativeCompile --no-daemon
+
+
+# shrink app
+FROM --platform=${BUILDPLATFORM} alpine:3.16 AS builder
+
+WORKDIR /build
+RUN --mount=type=cache,target=/etc/apk/cache apk --update-cache add tzdata
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "10001" \
+    "notes"
+COPY --link --from=pratikimprowise/upx:3.96 /usr/local/bin/upx /usr/local/bin/upx
+COPY --link --from=compile /build/build/native/nativeCompile/notes /build/notes
+RUN [ "upx", "-9", "--best", "--ultra-brute", "/build/notes" ]
+
+# create image with all required files for squashing in later stage
+FROM scratch AS squash
+
+COPY --link --from=alpine:3.16 --chown=10001:10001 --chmod=1777 /tmp /tmp
+COPY --link --from=builder /usr/share/zoneinfo/ /usr/share/zoneinfo/
+COPY --link --from=builder /etc/hosts /etc/group /etc/passwd /etc/ssl/ /etc/
+COPY --link --from=builder --chown=10001:10001 /build/notes /app/notes
+
+
+# final image
+FROM scratch
+
+ENV TZ=Europe/Berlin SSL_CERT_DIR=/etc/ssl/certs PATH=/app
+USER 10001:10001
+COPY --link --from=squash / /
+WORKDIR /app
+
+ENTRYPOINT ["/app/notes"]

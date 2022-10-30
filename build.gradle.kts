@@ -1,0 +1,83 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    // Kotlin
+    val kotlinVersion = "1.7.20"
+    kotlin("jvm") version kotlinVersion
+    kotlin("plugin.jpa") version kotlinVersion
+    kotlin("plugin.spring") version kotlinVersion
+
+    // Spring
+    id("org.springframework.boot") version "3.0.0-RC1"
+    id("io.spring.dependency-management") version "1.1.0"
+    id("org.graalvm.buildtools.native") version "0.9.16"
+}
+
+group = "de.cmdjulian"
+version = "1.0.0"
+java.sourceCompatibility = JavaVersion.VERSION_17
+
+repositories {
+    mavenCentral()
+    maven { url = uri("https://repo.spring.io/milestone") }
+    maven { url = uri("https://repo.spring.io/snapshot") }
+}
+
+dependencies {
+    // Spring
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-hateoas")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+
+    // Kotlin
+    implementation(kotlin("reflect"))
+    implementation(kotlin("stdlib"))
+
+    // database
+    runtimeOnly("com.h2database:h2")
+
+    // Jackson
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
+    // tests
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // JUnit
+    implementation(platform("org.junit:junit-bom:5.9.1"))
+
+    // MockK
+    testImplementation("io.mockk:mockk:1.13.2")
+    testImplementation("com.ninja-squad:springmockk:3.1.1")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.5.1")
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs = listOf(
+            "-Xjsr305=strict",
+            "-Xemit-jvm-type-annotations",
+            "-java-parameters",
+            "-Xjvm-default=all"
+        )
+        jvmTarget = "${JavaVersion.VERSION_17}"
+    }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+tasks {
+    bootBuildImage {
+        builder.set("paketobuildpacks/builder:tiny")
+        environment.set(
+            mapOf(
+                "BP_JVM_VERSION" to "17",
+                "BP_NATIVE_IMAGE" to "true",
+                "BP_BINARY_COMPRESSION_METHOD" to "upx"
+            )
+        )
+    }
+}

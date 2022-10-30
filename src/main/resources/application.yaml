@@ -1,0 +1,57 @@
+server:
+  port: 8080
+  forward-headers-strategy: FRAMEWORK
+  error:
+    include-message: always
+    include-stacktrace: never
+    include-binding-errors: always
+    whitelabel:
+      enabled: false
+  shutdown: graceful
+  compression:
+    enabled: true
+
+
+spring:
+  output:
+    ansi:
+      enabled: always
+
+  datasource:
+    url: jdbc:h2:async:./database/h2
+    driverClassName: org.h2.Driver
+    username: eta
+    password: eta
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        check_nullability: true
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 50
+        query:
+          in_clause_parameter_padding: true
+          fail_on_pagination_over_collection_fetch: true
+          plan_cache_max_size: 4096
+        order_by:
+          default_null_ordering: last
+
+  h2:
+    console.enabled: true
+
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+      fail-on-null-for-primitives: true
+      fail-on-numbers-for-enums: true
+      fail-on-ignored-properties: true
+
+  jmx:
+    enabled: false
