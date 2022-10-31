@@ -25,6 +25,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: type=raw,value=scratch,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.authors=cmdjulian
             org.opencontainers.image.base.name=scratch
@@ -52,8 +53,7 @@ jobs:
           file: Dockerfile-scratch
           platforms: linux/amd64
           push: true
-          tags: scratch
-          network: host
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
