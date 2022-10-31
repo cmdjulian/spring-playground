@@ -53,6 +53,7 @@ jobs:
           file: Dockerfile-distroless
           platforms: linux/amd64
           push: true
+          network: host
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
