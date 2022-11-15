@@ -2,15 +2,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Kotlin
-    val kotlinVersion = "1.7.20"
+    val kotlinVersion = "1.7.21"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.jpa") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
 
     // Spring
-    id("org.springframework.boot") version "3.0.0-RC1"
+    id("org.springframework.boot") version "3.0.0-RC2"
     id("io.spring.dependency-management") version "1.1.0"
-    id("org.graalvm.buildtools.native") version "0.9.16"
+    id("org.graalvm.buildtools.native") version "0.9.17"
 }
 
 group = "de.cmdjulian"
