@@ -27,7 +27,6 @@ RUN adduser \
     "notes"
 COPY --link --from=pratikimprowise/upx:3.96 /usr/local/bin/upx /usr/local/bin/upx
 COPY --link --from=compile /build/build/native/nativeCompile/notes /build/notes
-RUN [ "upx", "-9", "--best", "--ultra-brute", "/build/notes" ]
 
 # create image with all required files for squashing in later stage
 FROM scratch AS squash

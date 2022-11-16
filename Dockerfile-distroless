@@ -16,7 +16,6 @@ RUN --mount=type=cache,target=.gradle-cache ./gradlew --no-daemon nativeCompile
 FROM pratikimprowise/upx:3.96 AS shrinker
 
 COPY --link --from=builder /build/build/native/nativeCompile/notes /build/notes
-RUN [ "upx", "-9", "--best", "--ultra-brute", "/build/notes" ]
 
 
 # final image
