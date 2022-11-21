@@ -1,9 +1,11 @@
 package de.cmdjulian.playground.notebook.adapter
 
+import com.turkraft.springfilter.boot.Filter
 import de.cmdjulian.playground.notebook.application.NotebookService
 import de.cmdjulian.playground.notebook.domain.Notebook
 import de.cmdjulian.playground.shared.NOTEBOOK_ENDPOINT
 import jakarta.validation.Valid
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,13 +23,26 @@ import java.util.*
 class NotebookController(private val service: NotebookService) {
 
     @PostMapping
-    fun createNotebook(@Valid @RequestBody command: NotebookCommand): NotebookDto {
+    fun createNotebook(
+        @Valid @RequestBody
+        command: NotebookCommand
+    ): NotebookDto {
         return service.createNotebook(command.toNotebook(), command.tags).toDto()
     }
 
     @GetMapping
     fun retrieveNotebooks(filters: NotebookFilters): List<NotebookDto> {
         return service.findAllNotebooks(filters.tagNames, filters.content).map(Notebook::toDto)
+    }
+
+    @GetMapping(params = ["!filter"])
+    fun retrieveNotebooksFiltered(filters: NotebookFilters): List<NotebookDto> {
+        return service.findAllNotebooks(filters.tagNames, filters.content).map(Notebook::toDto)
+    }
+
+    @GetMapping(params = ["filter"])
+    fun search(@Filter specification: Specification<Notebook>): List<NotebookDto> {
+        return service.findAllNotebooks(specification).map(Notebook::toDto)
     }
 
     @GetMapping("{id}")

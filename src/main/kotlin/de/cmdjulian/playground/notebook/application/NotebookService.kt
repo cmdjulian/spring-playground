@@ -25,6 +25,11 @@ class NotebookService(
     }
 
     @Transactional(readOnly = true)
+    fun findAllNotebooks(specification: Specification<Notebook>): List<Notebook> {
+        return repository.findAll(specification)
+    }
+
+    @Transactional(readOnly = true)
     fun findAllNotebooks(tagNames: List<String>?, text: String?): List<Notebook> {
         val spec = Specification { root: Root<Notebook>, _, builder ->
             val predicates: MutableList<Predicate> = mutableListOf()

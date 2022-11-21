@@ -34,6 +34,10 @@ dependencies {
     implementation(kotlin("reflect"))
     implementation(kotlin("stdlib"))
 
+    // utils
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
+    implementation("com.turkraft:spring-filter:2.1.1")
+
     // database
     runtimeOnly("com.h2database:h2")
 
@@ -59,7 +63,8 @@ tasks.withType<KotlinCompile> {
             "-Xjsr305=strict",
             "-Xemit-jvm-type-annotations",
             "-java-parameters",
-            "-Xjvm-default=all"
+            "-Xjvm-default=all",
+            "-Xcontext-receivers"
         )
         jvmTarget = "${JavaVersion.VERSION_17}"
     }
