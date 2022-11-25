@@ -15,7 +15,12 @@ plugins {
 
 group = "de.cmdjulian"
 version = "1.0.0"
-java.sourceCompatibility = JavaVersion.VERSION_17
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
 
 repositories {
     mavenCentral()
