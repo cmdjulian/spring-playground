@@ -1,5 +1,3 @@
-@file:Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-
 package de.cmdjulian.playground.config
 
 import de.cmdjulian.playground.note.adapter.NoteFilters

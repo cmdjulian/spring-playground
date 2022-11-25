@@ -8,7 +8,7 @@ plugins {
     kotlin("plugin.spring") version kotlinVersion
 
     // Spring
-    id("org.springframework.boot") version "3.0.0-RC2"
+    id("org.springframework.boot") version "3.0.0"
     id("io.spring.dependency-management") version "1.1.0"
     id("org.graalvm.buildtools.native") version "0.9.17"
 }
@@ -19,8 +19,6 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://repo.spring.io/milestone") }
-    maven { url = uri("https://repo.spring.io/snapshot") }
 }
 
 dependencies {
@@ -49,6 +47,7 @@ dependencies {
 
     // JUnit
     implementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
 
     // MockK
     testImplementation("io.mockk:mockk:1.13.2")
@@ -70,6 +69,16 @@ tasks.withType<KotlinCompile> {
 }
 
 graalvmNative {
+    toolchainDetection.set(false)
+    binaries {
+        all {
+            resources.autodetect()
+        }
+        named("main") {
+            imageName.set("notes")
+            buildArgs("--static", "--libc=musl", "--enable-url-protocols=http,https")
+        }
+    }
     metadataRepository {
         enabled.set(true)
         version.set("0.2.5")
@@ -83,12 +92,6 @@ tasks.withType<Test> {
 tasks {
     bootBuildImage {
         builder.set("paketobuildpacks/builder:tiny")
-        environment.set(
-            mapOf(
-                "BP_JVM_VERSION" to "17",
-                "BP_NATIVE_IMAGE" to "true",
-                "BP_BINARY_COMPRESSION_METHOD" to "upx"
-            )
-        )
+        environment.set(mapOf("BP_JVM_VERSION" to "17", "BP_NATIVE_IMAGE" to "true"))
     }
 }
