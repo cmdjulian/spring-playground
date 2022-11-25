@@ -4,6 +4,7 @@ import de.cmdjulian.playground.note.application.NoteService
 import de.cmdjulian.playground.note.domain.Note
 import de.cmdjulian.playground.shared.NOTE_ENDPOINT
 import jakarta.validation.Valid
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,6 +27,7 @@ class NoteController(private val service: NoteService) {
     }
 
     @GetMapping
+    @RegisterReflectionForBinding(NoteFilters::class)
     fun findNotes(@PathVariable notebookId: UUID, filters: NoteFilters): List<NoteDto> {
         return service.findNotes(notebookId, filters.tagNames, filters.content).map(Note::toDto)
     }

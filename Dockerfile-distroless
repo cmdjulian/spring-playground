@@ -2,27 +2,19 @@
 
 FROM ghcr.io/graalvm/native-image:muslib-ol9-java17-22.3.0 AS builder
 
-ENV GRADLE_USER_HOME=".gradle-cache"
-ENV NATIVE_IMAGE_CONFIG_FILE="/tmp/default.properties"
-RUN echo "NativeImageArgs = --static --libc=musl" > "${NATIVE_IMAGE_CONFIG_FILE}"
+RUN microdnf install -y findutils
 
 WORKDIR /build
-RUN microdnf install -y findutils
+ENV GRADLE_USER_HOME=".gradle-cache"
 COPY --link . /build/
 RUN --mount=type=cache,target=.gradle-cache ./gradlew --no-daemon nativeCompile
-
-
-# compress application
-FROM pratikimprowise/upx:3.96 AS shrinker
-
-COPY --link --from=builder /build/build/native/nativeCompile/notes /build/notes
 
 
 # final image
 FROM gcr.io/distroless/static:nonroot
 
 USER nonroot:nonroot
-COPY --link --from=shrinker /build/notes /home/nonroot/notes
+COPY --link --from=builder --chown=nonroot:nonroot /build/build/native/nativeCompile/notes /home/nonroot/notes
 WORKDIR /home/nonroot
 
 ENTRYPOINT ["/home/nonroot/notes"]
