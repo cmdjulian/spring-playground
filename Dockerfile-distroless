@@ -5,8 +5,8 @@ FROM ghcr.io/graalvm/native-image:muslib-ol9-java17-22.3.0 AS builder
 RUN microdnf install -y findutils
 
 WORKDIR /build
-ENV GRADLE_USER_HOME=".gradle-cache"
 COPY --link . /build/
+ENV GRADLE_USER_HOME=".gradle-cache" JAVA_TOOL_OPTIONS="-Djdk.lang.Process.launchMechanism=vfork"
 RUN --mount=type=cache,target=.gradle-cache ./gradlew --no-daemon nativeCompile
 
 
@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=.gradle-cache ./gradlew --no-daemon nativeCompile
 FROM gcr.io/distroless/static:nonroot
 
 USER nonroot:nonroot
-COPY --link --from=builder --chown=nonroot:nonroot /build/build/native/nativeCompile/notes /home/nonroot/notes
+COPY --link --from=builder --chown=nonroot:nonroot --chmod=500 /build/build/native/nativeCompile/notes /home/nonroot/notes
 WORKDIR /home/nonroot
 
 ENTRYPOINT ["/home/nonroot/notes"]

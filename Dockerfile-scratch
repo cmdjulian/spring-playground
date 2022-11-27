@@ -5,8 +5,8 @@ FROM ghcr.io/graalvm/native-image:muslib-ol9-java17-22.3.0 AS compile
 RUN microdnf install -y findutils
 
 WORKDIR /build
-ENV GRADLE_USER_HOME=".gradle-cache"
 COPY --link . /build/
+ENV GRADLE_USER_HOME=".gradle-cache" JAVA_TOOL_OPTIONS="-Djdk.lang.Process.launchMechanism=vfork"
 RUN --mount=type=cache,target=.gradle-cache ./gradlew --no-daemon nativeCompile
 
 
@@ -31,7 +31,7 @@ FROM scratch AS squash
 COPY --link --from=alpine:3.16 --chown=10001:10001 --chmod=1777 /tmp /tmp
 COPY --link --from=builder /usr/share/zoneinfo/ /usr/share/zoneinfo/
 COPY --link --from=builder /etc/hosts /etc/group /etc/passwd /etc/ssl/ /etc/
-COPY --link --from=compile --chown=10001:10001 /build/build/native/nativeCompile/notes /app/notes
+COPY --link --from=compile --chown=10001:10001 --chmod=500 /build/build/native/nativeCompile/notes /app/notes
 
 
 # final image

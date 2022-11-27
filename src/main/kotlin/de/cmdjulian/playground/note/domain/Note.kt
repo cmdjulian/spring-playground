@@ -55,4 +55,17 @@ class Note(
 data class NoteId(
     @Column(columnDefinition = "uuid") val notebookId: UUID,
     @Column(columnDefinition = "uuid") val noteId: UUID
-) : Serializable
+) : Serializable {
+
+    override fun equals(other: Any?): Boolean {
+        return when {
+            this === other -> true
+            other !is NoteId -> false
+            notebookId != other.notebookId -> false
+            noteId != other.noteId -> false
+            else -> true
+        }
+    }
+
+    override fun hashCode(): Int = 31 * notebookId.hashCode() + noteId.hashCode()
+}
