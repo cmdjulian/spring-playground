@@ -6,3 +6,5 @@ README.md
 build
 database
 Dockerfile-distroless
+Dockerfile-scratch
+Dockerfile-scratch-compressed
