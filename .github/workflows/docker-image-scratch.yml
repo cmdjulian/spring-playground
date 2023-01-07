@@ -28,7 +28,6 @@ jobs:
           tags: type=raw,value=scratch,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.authors=cmdjulian
-            org.opencontainers.image.base.name=scratch
             org.opencontainers.image.vendor=cmdjulian
 
       - name: Set up QEMU

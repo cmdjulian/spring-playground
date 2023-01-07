@@ -28,7 +28,6 @@ jobs:
           tags: type=raw,value=distroless,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.authors=cmdjulian
-            org.opencontainers.image.base.name=distroless
             org.opencontainers.image.vendor=cmdjulian
 
       - name: Set up QEMU
@@ -50,7 +49,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: Dockerfile-distroless
+          file: Dockerfile-distroless-static
           platforms: linux/amd64
           push: true
           network: host

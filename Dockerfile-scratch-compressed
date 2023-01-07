@@ -2,24 +2,24 @@
 
 FROM ghcr.io/graalvm/native-image:muslib-ol9-java17-22.3.0 AS compile
 
-RUN microdnf update \
+RUN microdnf update -y \
  && microdnf install --nodocs -y tar gzip findutils \
  && microdnf clean all \
  && rm -rf /var/cache/yum
 WORKDIR /build
-ENV GRADLE_USER_HOME=".gradle-cache"
-RUN --mount=type=bind,source=.,target=/build,rw --mount=type=cache,target=.gradle-cache <<EOF
-set -euxo pipefail
-./gradlew --no-daemon nativeCompileStatic
-cp build/native/nativeCompile/notes /notes
-EOF
+ENV GRADLE_OPTS="-Dorg.gradle.project.buildDir=/gradle/build" \
+    GRADLE_USER_HOME="/gradle/home" \
+    PROJECT_CACHE_DIR="/gradle/project-cache-dir"
+RUN --mount=type=cache,target=$GRADLE_USER_HOME --mount=type=cache,target=$PROJECT_CACHE_DIR --mount=source=.,target=. \
+    ./gradlew --no-watch-fs --no-daemon --project-cache-dir $PROJECT_CACHE_DIR -Pstatic nativeCompile
+RUN strip --strip-all /gradle/build/native/nativeCompile/notes
 
 
 # compress app with upx
 FROM --platform=$BUILDPLATFORM alpine:3.16 AS builder
 
 WORKDIR /build
-RUN --mount=type=cache,target=/etc/apk/cache apk --update-cache add tzdata
+RUN apk --update-cache add tzdata
 RUN adduser \
     --disabled-password \
     --gecos "" \
@@ -29,41 +29,25 @@ RUN adduser \
     --uid "10001" \
     "notes"
 COPY --from=pratikimprowise/upx:3.96 /usr/local/bin/upx /usr/local/bin/upx
-COPY --link --from=compile /notes /build/notes
+COPY --link --from=compile /gradle/build/native/nativeCompile/notes /build/notes
 RUN [ "upx", "-9", "--best", "--ultra-brute", "/build/notes" ]
 
 # create image with all required files for squashing in later stage
 FROM scratch AS squash
 
-COPY --link --from=builder /etc/passwd /etc/group /etc/
-COPY --link --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --link --from=alpine:3.16 --chown=10001:10001 --chmod=1777 /tmp /tmp
 COPY --link --from=builder /usr/share/zoneinfo/ /usr/share/zoneinfo/
-COPY --link --from=builder /etc/hosts /etc/hosts
-COPY --link --from=builder --chown=10001:10001 /tmp /tmp
+COPY --link --from=builder /etc/hosts /etc/group /etc/passwd /etc/ssl/ /etc/
+COPY --link --from=builder --chown=10001:10001 --chmod=600 /tmp /app/database
 COPY --link --from=builder --chown=10001:10001 --chmod=500 /build/notes /app/notes
 
 
 # final image
 FROM scratch
 
-ARG CREATED REVISION
-LABEL org.opencontainers.image.authors="cmdjulian" \
-      org.opencontainers.image.base.name="scratch" \
-      org.opencontainers.image.created=${CREATED} \
-      org.opencontainers.image.description="GraalVM static binary test" \
-      org.opencontainers.image.documentation="https://gitlab.com/etalytics/recruiting/backend-notes-project-kotlin-reference-impl/-/blob/main/TASKS.md" \
-      org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.ref.name="main" \
-      org.opencontainers.image.revision=${REVISION} \
-      org.opencontainers.image.source="https://gitlab.com/etalytics/recruiting/backend-notes-project-kotlin-reference-impl" \
-      org.opencontainers.image.title="notes" \
-      org.opencontainers.image.url="https://gitlab.com/etalytics/recruiting/backend-notes-project-kotlin-reference-impl" \
-      org.opencontainers.image.vendor="cmdjulian" \
-      org.opencontainers.image.version="v1"
 ENV TZ=Europe/Berlin SSL_CERT_DIR=/etc/ssl/certs PATH=/app
 USER 10001:10001
 EXPOSE 8080 8090
-COPY --link --from=squash / /
 WORKDIR /app
-
 ENTRYPOINT ["/app/notes"]
+COPY --link --from=squash / /

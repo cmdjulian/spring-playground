@@ -9,7 +9,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  docker-scratch:
+  docker-distroless:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,7 +25,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: type=raw,value=scratch-compressed,enable={{is_default_branch}}
+          tags: type=raw,value=distroless,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.authors=cmdjulian
             org.opencontainers.image.vendor=cmdjulian
@@ -44,12 +44,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Scratch
+      - name: Build and push Distroless
         id: build-and-push
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: Dockerfile-scratch-compressed
+          file: Dockerfile-distroless-static
           platforms: linux/amd64
           push: true
           network: host
