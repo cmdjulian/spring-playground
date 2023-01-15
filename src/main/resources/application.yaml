@@ -12,6 +12,10 @@ server:
     enabled: true
 
 
+hello:
+  message: classpath:hello/world.txt
+
+
 spring:
   output:
     ansi:
