@@ -114,7 +114,6 @@ graalvmNative {
     }
 }
 
-
 tasks {
     bootBuildImage {
         builder.set("paketobuildpacks/builder:tiny")

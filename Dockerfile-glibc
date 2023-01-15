@@ -27,4 +27,4 @@ EXPOSE 8080 8090
 HEALTHCHECK  --interval=1m --timeout=5s \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8090/actuator/health/liveness || exit 1
 ENTRYPOINT ["/sbin/tini", "--", "/home/nonroot/notes"]
-COPY --link --from=builder --chown=10001:10001 --chmod=500 /gradle/build/native/nativeCompile/notes /home/nonroot/etaGuard
+COPY --link --from=builder --chown=10001:10001 --chmod=500 /gradle/build/native/nativeCompile/notes /home/nonroot/notes

@@ -21,6 +21,6 @@ FROM gcr.io/distroless/static:nonroot
 USER 65532:65532
 WORKDIR /home/nonroot
 EXPOSE 8080 8090
-ENTRYPOINT ["/home/nonroot/etaGuard"]
+ENTRYPOINT ["/home/nonroot/notes"]
 COPY --link --from=builder --chown=10001:10001 --chmod=600 /tmp /home/nonroot/database
 COPY --link --from=builder --chown=10001:10001 --chmod=500 /gradle/build/native/nativeCompile/notes /home/nonroot/notes
